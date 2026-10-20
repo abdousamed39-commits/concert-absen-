@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vérificateur - ABSEN</title>
+<style>
+body{font-family:Arial;background:#061a14;color:white;padding:20px;max-width:500px;margin:0 auto}
+.input{width:100%;padding:18px;border-radius:12px;border:2px solid #d4c06a;background:#0f2e22;color:white;font-size:22px;text-align:center;letter-spacing:2px;font-weight:900}
+.btn{width:100%;padding:16px;border-radius:30px;border:none;background:#d4c06a;color:#0a2214;font-weight:900;font-size:18px;margin-top:12px;cursor:pointer}
+.result{margin-top:20px;border-radius:16px;padding:20px;text-align:center;font-size:18px;font-weight:900}
+.logo{text-align:center;color:#d4c06a;font-weight:900;font-size:22px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="logo">ABSEN - VÉRIFICATEUR</div>
+<p style="text-align:center;color:#8ab0a0;font-size:13px;margin-bottom:20px">Tape le CODE que le client te donne<br>Ex: ABSEN-V-7K9X-47</p>
+
+<input class="input" id="codeInput" placeholder="ABSEN-V-XXXX">
+<button class="btn" onclick="verify()">🔍 VÉRIFIER LE CODE</button>
+
+<div id="result"></div>
+
+<div style="margin-top:30px;background:#12382a;padding:14px;border-radius:12px;border:1px solid #1e5a40">
+<div style="color:#d4c06a;font-weight:900;font-size:13px">📋 CODES UTILISÉS AUJOURD'HUI</div>
+<div id="usedList" style="font-size:12px;color:#8ab0a0;margin-top:8px">Aucun pour le moment</div>
+<button onclick="clearAll()" style="margin-top:10px;background:#ff4444;color:white;border:none;padding:8px 14px;border-radius:8px;font-size:11px">Effacer liste (début de soirée)</button>
+</div>
+
+<script>
+function verify(){
+  const code=document.getElementById('codeInput').value.trim().toUpperCase();
+  const res=document.getElementById('result');
+  if(!code.startsWith('ABSEN')){ res.innerHTML='<div class="result" style="background:#ff4444">❌ CODE FAUX<br><span style="font-size:13px">Doit commencer par ABSEN</span></div>'; return; }
+  const data=localStorage.getItem(code);
+  const used=localStorage.getItem(code+'_used');
+  
+  if(used){
+    res.innerHTML='<div class="result" style="background:orange;color:black">⚠️ DÉJÀ UTILISÉ<br><span style="font-size:13px">Ce code est déjà entré !</span></div>';
+  } else if(data){
+    const j=JSON.parse(data);
+    res.innerHTML='<div class="result" style="background:#25D366;color:white">✅ VALIDE - LAISSE PASSER<br><br><span style="font-size:14px;font-weight:400">Nom: '+j.name+'<br>Type: '+j.type+' - '+j.price+' MRU<br>Code: '+code+'</span><br><br><button onclick="markUsed(\''+code+'\')" style="background:white;color:black;padding:12px 24px;border-radius:30px;border:none;font-weight:900">✅ MARQUER COMME ENTRÉ</button></div>';
+  } else {
+    // Code valide format mais pas dans ce tel = client a généré sur son tel, on vérifie juste format + paiement WhatsApp
+    res.innerHTML='<div class="result" style="background:#d4c06a;color:#0a2214">✅ FORMAT VALIDE<br><span style="font-size:13px">Vérifie que tu as reçu le paiement WhatsApp pour<br><b>'+code+'</b></span><br><br><button onclick="markUsed(\''+code+'\')" style="background:#0a2214;color:#d4c06a;padding:12px 24px;border-radius:30px;border:none;font-weight:900">✅ VALIDER ENTRÉE</button></div>';
+  }
+}
+
+function markUsed(c){
+  localStorage.setItem(c+'_used','1');
+  let list=JSON.parse(localStorage.getItem('used_list')||'[]');
+  list.push(c+' - '+new Date().toLocaleTimeString());
+  localStorage.setItem('used_list',JSON.stringify(list));
+  updateList();
+  alert('✅ '+c+' marqué comme entré !');
+  document.getElementById('result').innerHTML=''; document.getElementById('codeInput').value='';
+}
+
+function updateList(){
+  const list=JSON.parse(localStorage.getItem('used_list')||'[]');
+  document.getElementById('usedList').innerHTML = list.length ? list.reverse().join('<br>') : 'Aucun pour le moment';
+}
+function clearAll(){ if(confirm('Effacer tous les codes utilisés ?')){ localStorage.clear(); updateList(); document.getElementById('result').innerHTML=''; }}
+updateList();
+</script>
+</body>
+  </html>
