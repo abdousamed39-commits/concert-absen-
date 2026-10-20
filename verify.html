@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vérificateur - ABSEN</title>
+<style>
+body{font-family:Arial;background:#061a14;color:white;padding:20px;max-width:500px;margin:0 auto}
+.input{width:100%;padding:18px;border-radius:12px;border:2px solid #d4c06a;background:#0f2e22;color:white;font-size:20px;text-align:center;font-weight:900}
+.btn{width:100%;padding:16px;border-radius:30px;border:none;background:#d4c06a;color:#0a2214;font-weight:900;font-size:18px;margin-top:12px;cursor:pointer}
+.result{margin-top:20px;border-radius:16px;padding:20px;text-align:center;font-size:18px;font-weight:900}
+</style>
+</head>
+<body>
+<div style="text-align:center;color:#d4c06a;font-weight:900;font-size:22px">VÉRIFICATEUR - 41176023</div>
+
+<input class="input" id="codeInput" placeholder="ABSEN-S-VGMA-76">
+<button class="btn" onclick="verify()">🔍 VÉRIFIER</button>
+<div id="result"></div>
+
+<div style="margin-top:20px;text-align:center"><a href="admin.html" style="color:#d4c06a;font-size:13px">→ Page ADMIN Paiements</a></div>
+
+<script>
+function verify(){
+  const code=document.getElementById('codeInput').value.trim().toUpperCase();
+  const res=document.getElementById('result');
+  if(!code.startsWith('ABSEN')){res.innerHTML='<div class="result" style="background:#ff4444">❌ CODE FAUX</div>';return;}
+  const paid=localStorage.getItem('PAID_'+code);
+  const used=localStorage.getItem('USED_'+code);
+  
+  if(used){
+    res.innerHTML='<div class="result" style="background:orange;color:black">⚠️ DÉJÀ ENTRÉ<br><span style="font-size:13px">'+code+'</span></div>';
+  } else if(paid){
+    const d=JSON.parse(paid);
+    res.innerHTML='<div class="result" style="background:#25D366">✅ PAYÉ - LAISSE PASSER<br><br><span style="font-size:14px;font-weight:400">'+d.name+'<br>'+code+'<br>Payé le: '+d.time+'</span><br><br><button onclick="markUsed(\''+code+'\')" style="background:white;color:black;padding:12px 24px;border-radius:30px;border:none;font-weight:900">✅ MARQUER ENTRÉ</button></div>';
+  } else {
+    res.innerHTML='<div class="result" style="background:#ff4444">❌ NON PAYÉ<br><span style="font-size:13px">Code existe mais pas payé sur 41176023<br>'+code+'<br>Vérifie WhatsApp</span></div>';
+  }
+}
+function markUsed(c){localStorage.setItem('USED_'+c,'1');alert('✅ '+c+' entré !');document.getElementById('result').innerHTML='';document.getElementById('codeInput').value='';}
+</script>
+</body>
+</html>
